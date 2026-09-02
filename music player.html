@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Music Player</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial;
+            background: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .player {
+            width: 420px;
+            max-width: 90%;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px gray;
+            text-align: center;
+        }
+
+        .cover {
+            width: 180px;
+            height: 180px;
+            margin: auto;
+            background: #333;
+            color: white;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 50px;
+        }
+
+        #title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        #artist {
+            color: gray;
+        }
+
+        input[type="range"] {
+            width: 100%;
+        }
+
+        .time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .controls button {
+            border: none;
+            background: none;
+            font-size: 25px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        #play {
+            background: #333;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .volume {
+            margin: 15px 0;
+        }
+
+        .playlist {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .song {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
+
+        .song:hover {
+            background: #f0f0f0;
+        }
+
+        .active {
+            background: #ddd;
+            font-weight: bold;
+        }
+
+        .options button {
+            padding: 8px 12px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 450px) {
+            .player {
+                padding: 20px;
+            }
+
+            .cover {
+                width: 140px;
+                height: 140px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="player">
+
+        <div class="cover">♫</div>
+
+        <p id="title">Song One</p>
+        <p id="artist">Artist One</p>
+
+        <input type="range" id="progress" value="0">
+
+        <div class="time">
+            <span id="currentTime">0:00</span>
+            <span id="duration">0:00</span>
+        </div>
+
+        <div class="controls">
+            <button onclick="previousSong()">⏮</button>
+            <button id="play" onclick="playPause()">▶</button>
+            <button onclick="nextSong()">⏭</button>
+        </div>
+
+        <div class="volume">
+            🔊
+            <input type="range" id="volume" min="0" max="1" step="0.01" value="1">
+        </div>
+
+        <div class="options">
+            <button onclick="shuffleSongs()">🔀 Shuffle</button>
+            <button onclick="repeatSong()">🔁 Repeat</button>
+        </div>
+
+        <div class="playlist" id="playlist"></div>
+
+        <audio id="audio"></audio>
+
+    </div>
+
+    <script>
+        let songs = [
+            {
+                title: "Song One",
+                artist: "Artist One",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+            },
+            {
+                title: "Song Two",
+                artist: "Artist Two",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
+            },
+            {
+                title: "Song Three",
+                artist: "Artist Three",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"
+            },
+            {
+                title: "Song Four",
+                artist: "Artist Four",
+                src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"
+            }
+        ];
+
+        let currentSong = 0;
+        let isPlaying = false;
+        let repeat = false;
+
+        let audio = document.getElementById("audio");
+        let playButton = document.getElementById("play");
+        let progress = document.getElementById("progress");
+        let volume = document.getElementById("volume");
+
+        function loadSong() {
+            let song = songs[currentSong];
+
+            document.getElementById("title").innerHTML = song.title;
+            document.getElementById("artist").innerHTML = song.artist;
+
+            audio.src = song.src;
+
+            showPlaylist();
+        }
+
+        function playPause() {
+            if (isPlaying) {
+                audio.pause();
+                playButton.innerHTML = "▶";
+                isPlaying = false;
+            }
+            else {
+                audio.play();
+                playButton.innerHTML = "⏸";
+                isPlaying = true;
+            }
+        }
+
+        function nextSong() {
+            currentSong++;
+
+            if (currentSong >= songs.length) {
+                currentSong = 0;
+            }
+
+            loadSong();
+
+            audio.play();
+
+            playButton.innerHTML = "⏸";
+            isPlaying = true;
+        }
+
+        function previousSong() {
+            currentSong--;
+
+            if (currentSong < 0) {
+                currentSong = songs.length - 1;
+            }
+
+            loadSong();
+
+            audio.play();
+
+            playButton.innerHTML = "⏸";
+            isPlaying = true;
+        }
+
+        function showPlaylist() {
+            let playlist = document.getElementById("playlist");
+
+            playlist.innerHTML = "";
+
+            songs.forEach(function(song, index) {
+                let div = document.createElement("div");
+
+                div.className = "song";
+
+                if (index == currentSong) {
+                    div.classList.add("active");
+                }
+
+                div.innerHTML =
+                    song.title + " - " + song.artist;
+
+                div.onclick = function() {
+                    currentSong = index;
+                    loadSong();
+                    audio.play();
+                    playButton.innerHTML = "⏸";
+                    isPlaying = true;
+                };
+
+                playlist.appendChild(div);
+            });
+        }
+
+        function shuffleSongs() {
+            let random = Math.floor(Math.random() * songs.length);
+
+            currentSong = random;
+
+            loadSong();
+
+            audio.play();
+
+            playButton.innerHTML = "⏸";
+            isPlaying = true;
+        }
+
+        function repeatSong() {
+            repeat = !repeat;
+
+            if (repeat) {
+                audio.loop = true;
+            }
+            else {
+                audio.loop = false;
+            }
+        }
+
+        audio.addEventListener("timeupdate", function() {
+            if (audio.duration) {
+                progress.value =
+                    (audio.currentTime / audio.duration) * 100;
+            }
+
+            document.getElementById("currentTime").innerHTML =
+                formatTime(audio.currentTime);
+        });
+
+        audio.addEventListener("loadedmetadata", function() {
+            document.getElementById("duration").innerHTML =
+                formatTime(audio.duration);
+        });
+
+        progress.addEventListener("input", function() {
+            if (audio.duration) {
+                audio.currentTime =
+                    (progress.value / 100) * audio.duration;
+            }
+        });
+
+        volume.addEventListener("input", function() {
+            audio.volume = volume.value;
+        });
+
+        audio.addEventListener("ended", function() {
+            if (!repeat) {
+                nextSong();
+            }
+        });
+
+        function formatTime(time) {
+            let minutes = Math.floor(time / 60);
+            let seconds = Math.floor(time % 60);
+
+            if (seconds < 10) {
+                seconds = "0" + seconds;
+            }
+
+            return minutes + ":" + seconds;
+        }
+
+        loadSong();
+    </script>
+
+</body>
+</html>
