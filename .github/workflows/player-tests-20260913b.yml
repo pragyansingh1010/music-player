@@ -1,0 +1,10 @@
+name: Music Player Regression Tests
+on:
+  push:
+    branches: [main]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node tests/player_state.js
